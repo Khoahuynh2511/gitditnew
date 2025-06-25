@@ -1,0 +1,240 @@
+.repository-grid {
+  padding: 0 16px;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.grid-container {
+  margin-top: 24px;
+  padding: 0 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 24px;
+  animation: staggerChildren 0.3s ease-out;
+}
+
+.grid-container > * {
+  animation: scaleIn 0.4s ease-out;
+  animation-fill-mode: both;
+}
+
+.grid-container > *:nth-child(1) { animation-delay: 0.1s; }
+.grid-container > *:nth-child(2) { animation-delay: 0.2s; }
+.grid-container > *:nth-child(3) { animation-delay: 0.3s; }
+.grid-container > *:nth-child(4) { animation-delay: 0.4s; }
+.grid-container > *:nth-child(5) { animation-delay: 0.5s; }
+.grid-container > *:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Enhanced responsive grid adjustments */
+@media (max-width: 1400px) {
+  .grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 22px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 992px) {
+  .grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 18px;
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+    padding: 0 4px;
+  }
+}
+
+@media (max-width: 576px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 0;
+  }
+}
+
+/* Enhanced empty state */
+.grid-container-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 500px;
+  text-align: center;
+  padding: 60px 20px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border-radius: var(--radius-xl);
+  margin: 40px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.grid-container-empty h3 {
+  color: var(--text-primary);
+  font-size: 32px;
+  margin-bottom: 20px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.grid-container-empty p {
+  color: var(--text-secondary);
+  font-size: 18px;
+  margin-bottom: 32px;
+  max-width: 500px;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+.grid-container-empty .empty-icon {
+  font-size: 80px;
+  color: var(--primary-color);
+  margin-bottom: 32px;
+  opacity: 0.7;
+  animation: float 3s ease-in-out infinite;
+}
+
+.grid-container-empty .btn {
+  margin-top: 16px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Loading state improvements */
+.grid-loading {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 24px;
+  padding: 0 12px;
+  margin-top: 24px;
+}
+
+.grid-loading-item {
+  height: 320px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.grid-loading-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: shimmerLoading 1.5s infinite;
+}
+
+@keyframes shimmerLoading {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Scroll animations */
+@media (prefers-reduced-motion: no-preference) {
+  .grid-item-container {
+    animation: slideInUp 0.6s ease-out;
+    animation-fill-mode: both;
+  }
+
+  .grid-item-container:nth-child(odd) {
+    animation-delay: 0.1s;
+  }
+
+  .grid-item-container:nth-child(even) {
+    animation-delay: 0.2s;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced hover effects for the entire grid */
+.grid-container:hover .grid-item-container:not(:hover) {
+  opacity: 0.7;
+  transform: scale(0.98);
+}
+
+.grid-container .grid-item-container {
+  transition: all var(--transition-base);
+}
+
+/* Special featured repository styling */
+.grid-item-container.featured {
+  order: -1;
+}
+
+.grid-item-container.trending {
+  position: relative;
+}
+
+.grid-item-container.trending::after {
+  content: '🔥 Trending';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #ff6b6b, #feca57);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 10;
+  box-shadow: var(--shadow-md);
+}
