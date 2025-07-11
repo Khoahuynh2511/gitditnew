@@ -3,18 +3,19 @@ import { Link } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import './styles.css';
 import Logo from '../icons/logo';
+import SearchBar from '../search-bar';
 import LanguageFilter from '../filters/language-filter';
 import ViewFilter from '../filters/view-filter';
 import DateJumpFilter from '../filters/date-jump-filter';
 
 const TopNav: React.FC = () => {
-  const { preferences, updateDateJump, updateViewType, updateLanguage } = useAppContext();
+  const { preferences, updateDateJump, updateViewType, updateLanguage, isSearchMode } = useAppContext();
 
   return (
     <nav className="top-nav">
       <div className="container-fluid px-4">
         <div className="row align-items-center">
-          <div className="col-lg-6 col-md-6 col-sm-12">
+          <div className="col-lg-3 col-md-4 col-sm-12">
             <Link className="logo d-flex align-items-center text-decoration-none hover-lift" to="/">
               <div className="floating">
                 <Logo />
@@ -26,26 +27,36 @@ const TopNav: React.FC = () => {
             </Link>
           </div>
           
-          <div className="col-lg-6 col-md-6 col-sm-12">
+          <div className="col-lg-5 col-md-8 col-sm-12">
+            <div className="d-flex justify-content-center">
+              <SearchBar />
+            </div>
+          </div>
+          
+          <div className="col-lg-4 col-md-12 col-sm-12">
             <div className="nav-controls d-flex justify-content-end align-items-center gap-3">
-              <div className="hover-lift">
-                <LanguageFilter
-                  selectedLanguage={preferences.language}
-                  updateLanguage={updateLanguage}
-                />
-              </div>
-              <div className="hover-lift">
-                <ViewFilter
-                  selectedViewType={preferences.viewType}
-                  updateViewType={updateViewType}
-                />
-              </div>
-              <div className="hover-lift">
-                <DateJumpFilter
-                  selectedDateJump={preferences.dateJump}
-                  updateDateJump={updateDateJump}
-                />
-              </div>
+              {!isSearchMode && (
+                <>
+                  <div className="hover-lift">
+                    <LanguageFilter
+                      selectedLanguage={preferences.language}
+                      updateLanguage={updateLanguage}
+                    />
+                  </div>
+                  <div className="hover-lift">
+                    <ViewFilter
+                      selectedViewType={preferences.viewType}
+                      updateViewType={updateViewType}
+                    />
+                  </div>
+                  <div className="hover-lift">
+                    <DateJumpFilter
+                      selectedDateJump={preferences.dateJump}
+                      updateDateJump={updateDateJump}
+                    />
+                  </div>
+                </>
+              )}
               
               <Link 
                 className="btn btn-secondary hover-lift glass-effect"

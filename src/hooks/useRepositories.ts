@@ -1,5 +1,5 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { fetchTrendingRepositories, getNextDateRange } from '../services/githubApi';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { fetchTrendingRepositories, getNextDateRange, searchRepositories } from '../services/githubApi';
 import { TrendingFilters, RepositoryGroup } from '../types';
 
 interface UseRepositoriesProps {
@@ -56,4 +56,36 @@ export const useTrendingRepositories = (props: UseRepositoriesProps) => {
     hasNextPage: query.hasNextPage,
     isFetchingNextPage: query.isFetchingNextPage,
   };
+}; 
+
+interface UseSearchRepositoriesProps {
+  query: string;
+  token?: string;
+  enabled?: boolean;
+}
+
+export const useSearchRepositories = ({ query, token, enabled = true }: UseSearchRepositoriesProps) => {
+  return useInfiniteQuery(
+    ['search', query],
+    async ({ pageParam = 1 }) => {
+      return searchRepositories(query, token, pageParam);
+    },
+    {
+      enabled: enabled && query.length > 0,
+      getNextPageParam: (lastPage, pages) => {
+        const currentPage = pages.length;
+        const totalPages = Math.ceil(lastPage.total_count / 30);
+        return currentPage < totalPages ? currentPage + 1 : undefined;
+      },
+      staleTime: 5 * 60 * 1000,
+      cacheTime: 30 * 60 * 1000,
+      refetchOnWindowFocus: false,
+      retry: (failureCount: number, error: Error) => {
+        if (error.message === 'Bad credentials') {
+          return false;
+        }
+        return failureCount < 3;
+      },
+    }
+  );
 }; 

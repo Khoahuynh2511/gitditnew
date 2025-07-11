@@ -72,6 +72,65 @@ export const fetchTrendingRepositories = async (
   }
 };
 
+export const searchRepositories = async (
+  query: string,
+  token?: string,
+  page: number = 1
+): Promise<GitHubAPIResponse> => {
+  const params = new URLSearchParams({
+    q: query,
+    sort: 'stars',
+    order: 'desc',
+    per_page: '30',
+    page: page.toString(),
+  });
+
+  const url = `${API_URL}?${params}`;
+
+  const headers: Record<string, string> = {
+    'Accept': 'application/vnd.github.v3+json',
+    'User-Agent': 'GitHunt-App/2.0',
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+  try {
+    const response = await fetch(url, {
+      headers,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Bad credentials');
+      }
+      if (response.status >= 500) {
+        throw new Error('GitHub server error');
+      }
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data: GitHubAPIResponse = await response.json();
+    return data;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Request timeout');
+      }
+      throw error;
+    }
+    throw new Error('Network error');
+  }
+};
+
 export const getNextDateRange = (
   lastRange: { start: string; end: string } | null,
   dateJump: 'day' | 'week' | 'month'

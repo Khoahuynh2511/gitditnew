@@ -11,36 +11,60 @@ import RepositoryList from '../../components/repository-list';
 import RepositoryGrid from '../../components/repository-grid';
 
 import { useAppContext } from '../../context/AppContext';
-import { useTrendingRepositories } from '../../hooks/useRepositories';
+import { useTrendingRepositories, useSearchRepositories } from '../../hooks/useRepositories';
 
 const FeedContainer: React.FC = () => {
-  const { state, updateLanguage, updateViewType, updateDateJump } = useAppContext();
+  const { 
+    state, 
+    updateLanguage, 
+    updateViewType, 
+    updateDateJump, 
+    searchQuery, 
+    isSearchMode,
+    clearSearch 
+  } = useAppContext();
   const { preferences } = state;
 
-  const {
-    repositories,
-    allRepositories,
-    isLoading,
-    isFetching,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useTrendingRepositories({
+  const trendingQuery = useTrendingRepositories({
     language: preferences.language,
     dateJump: preferences.dateJump,
     token: preferences.options.token,
   });
+
+  const searchQuery_ = useSearchRepositories({
+    query: searchQuery,
+    token: preferences.options.token,
+    enabled: isSearchMode,
+  });
+
+  // Transform search results to match trending format
+  const repositories = isSearchMode 
+    ? searchQuery_.data?.pages.map((page, index) => ({
+        start: '',
+        end: '',
+        data: page
+      })) || []
+    : trendingQuery.repositories || [];
+
+  const allRepositories = isSearchMode
+    ? searchQuery_.data?.pages.flatMap(page => page.items) || []
+    : trendingQuery.allRepositories || [];
+
+  const activeQuery = isSearchMode ? searchQuery_ : trendingQuery;
 
   const renderTokenWarning = () => {
     return null;
   };
 
   const renderErrors = () => {
-    if (!error) return null;
+    if (!activeQuery.error) return null;
 
     let message: React.ReactNode = '';
-    switch (error.toLowerCase()) {
+    const errorMessage = typeof activeQuery.error === 'string' 
+      ? activeQuery.error 
+      : activeQuery.error.message;
+
+    switch (errorMessage.toLowerCase()) {
       case 'bad credentials':
         message = (
           <span>
@@ -52,7 +76,7 @@ const FeedContainer: React.FC = () => {
         message = 'Error trying to connect to GitHub servers';
         break;
       default:
-        message = error;
+        message = errorMessage;
         break;
     }
 
@@ -93,9 +117,35 @@ const FeedContainer: React.FC = () => {
     );
   };
 
+  const renderSearchHeader = () => {
+    if (!isSearchMode) return null;
+
+    return (
+      <div className="search-header mb-4">
+        <div className="d-flex align-items-center justify-content-between">
+          <div>
+            <h5 className="mb-1">
+              Kết quả tìm kiếm cho: "<span className="text-primary">{searchQuery}</span>"
+            </h5>
+            <p className="mb-0 text-muted">
+              {allRepositories.length > 0 && `Tìm thấy ${allRepositories.length} repositories`}
+            </p>
+          </div>
+          <button
+            className="btn btn-outline-secondary"
+            onClick={clearSearch}
+          >
+            <i className="fa fa-arrow-left me-2"></i>
+            Quay lại trending
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   const hasRepositories = repositories.length > 0;
 
-  if (isLoading) {
+  if (activeQuery.isLoading) {
     return (
       <div className="page-wrap">
         <TopNav />
@@ -114,7 +164,9 @@ const FeedContainer: React.FC = () => {
 
       <div className="container mb-5 pb-4">
         <div className="header-row clearfix">
-          {hasRepositories && (
+          {renderSearchHeader()}
+          
+          {!isSearchMode && hasRepositories && (
             <GroupHeading
               start={repositories[0].start}
               end={repositories[0].end}
@@ -122,7 +174,7 @@ const FeedContainer: React.FC = () => {
             />
           )}
           <div className="group-filters">
-            {hasRepositories && (
+            {!isSearchMode && hasRepositories && (
               <Filters
                 selectedLanguage={preferences.language}
                 selectedViewType={preferences.viewType}
@@ -137,17 +189,25 @@ const FeedContainer: React.FC = () => {
         <div className="body-row">
           {renderRepositoriesList()}
 
-          {(isFetching || isFetchingNextPage) && <Loader />}
+          {(activeQuery.isFetching || activeQuery.isFetchingNextPage) && <Loader />}
 
-          {!isFetching && hasRepositories && hasNextPage && (
+          {!activeQuery.isFetching && hasRepositories && activeQuery.hasNextPage && (
             <button
               className="btn btn-primary shadow load-next-date"
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
+              onClick={() => activeQuery.fetchNextPage()}
+              disabled={activeQuery.isFetchingNextPage}
             >
               <i className="fa fa-refresh mr-2"></i>
-              Load next {preferences.dateJump}
+              {isSearchMode ? 'Load more results' : `Load next ${preferences.dateJump}`}
             </button>
+          )}
+
+          {!activeQuery.isLoading && !hasRepositories && isSearchMode && (
+            <div className="text-center py-5">
+              <i className="fa fa-search fa-3x text-muted mb-3"></i>
+              <h5 className="text-muted">Không tìm thấy repositories nào</h5>
+              <p className="text-muted">Thử tìm kiếm với từ khóa khác</p>
+            </div>
           )}
         </div>
       </div>
